@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Run</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; }
+        h1 { color: #e05c00; }
+        label { display: block; margin-top: 15px; font-weight: bold; }
+        input, textarea, select { width: 100%; padding: 8px; margin-top: 4px;
+                                  border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .btn { background: #e05c00; color: white; padding: 12px 30px; border: none;
+               border-radius: 5px; cursor: pointer; margin-top: 20px; font-size: 16px; }
+        .section { background: #fff8f5; padding: 15px; border-radius: 8px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>+ Add Run</h1>
+    <form method="POST">
+
+        <div class="section">
+            <h3>📊 Watch data</h3>
+            <label>Date</label>
+            <input type="date" name="date" required>
+            <label>Distance (km)</label>
+            <input type="number" step="0.01" name="distance_km" placeholder="5.20">
+            <label>Duration (minutes)</label>
+            <input type="number" name="duration_min" placeholder="38">
+            <label>Average pace (mm:ss)</label>
+            <input type="text" name="avg_pace" placeholder="7:18">
+            <label>Average speed (km/h)</label>
+            <input type="number" step="0.1" name="avg_speed" placeholder="8.2">
+            <label>Calories</label>
+            <input type="number" name="calories" placeholder="420">
+            <label>Average heart rate</label>
+            <input type="number" name="avg_heart_rate" placeholder="158">
+            <label>Max heart rate</label>
+            <input type="number" name="max_heart_rate" placeholder="178">
+            <label>Cadence</label>
+            <input type="number" name="cadence" placeholder="172">
+            <label>Performance</label>
+            <input type="number" step="0.1" name="performance" placeholder="74">
+            <label>VO2Max</label>
+            <input type="number" step="0.1" name="vo2max" placeholder="42">
+            <label>Recovery time (hours)</label>
+            <input type="number" name="recovery_time_h" placeholder="22">
+        </div>
+
+        <div class="section">
+            <h3>😊 Wellbeing</h3>
+            <label>Headache after run?</label>
+            <select name="headache">
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+            </select>
+            <label>Energy before run (1-5)</label>
+            <input type="number" min="1" max="5" name="energy_before" placeholder="3">
+            <label>Energy after run (1-5)</label>
+            <input type="number" min="1" max="5" name="energy_after" placeholder="4">
+            <label>Notes</label>
+            <textarea name="notes" rows="3" placeholder="How did you feel? What was hard?"></textarea>
+        </div>
+
+        <button class="btn" type="submit">💾 Save run</button>
+    </form>
+</body>
+</html>

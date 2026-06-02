@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Running Tracker</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+        h1 { color: #e05c00; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
+        th { background: #e05c00; color: white; padding: 10px; text-align: left; }
+        td { padding: 8px 10px; border-bottom: 1px solid #eee; }
+        tr:hover { background: #fff8f5; }
+        .btn { background: #e05c00; color: white; padding: 10px 20px;
+               text-decoration: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🏃 Running Tracker</h1>
+    <a class="btn" href="/add">+ Add run</a>
+
+    <table>
+        <tr>
+            <th>Date</th>
+            <th>Distance</th>
+            <th>Duration</th>
+            <th>Pace</th>
+            <th>HR avg/max</th>
+            <th>Calories</th>
+            <th>VO2Max</th>
+            <th>Temp °C</th>
+            <th>Humidity %</th>
+            <th>Pressure</th>
+            <th>Headache</th>
+            <th>Energy before/after</th>
+            <th>Notes</th>
+        </tr>
+        {% for r in runs %}
+        <tr>
+            <td>{{ r.date }}</td>
+            <td>{{ r.distance_km }} km</td>
+            <td>{{ r.duration_min }} min</td>
+            <td>{{ r.avg_pace }}/km</td>
+            <td>{{ r.avg_heart_rate }}/{{ r.max_heart_rate }}</td>
+            <td>{{ r.calories }}</td>
+            <td>{{ r.vo2max }}</td>
+            <td>{{ r.temperature or '—' }}</td>
+            <td>{{ r.humidity or '—' }}</td>
+            <td>{{ r.pressure or '—' }}</td>
+            <td>{{ '✅' if r.headache == 0 else '🤕' }}</td>
+            <td>{{ r.energy_before }}→{{ r.energy_after }}</td>
+            <td>{{ r.notes or '' }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
