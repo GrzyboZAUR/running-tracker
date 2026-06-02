@@ -44,28 +44,4 @@ CREATE TABLE IF NOT EXISTS wellbeing (
 
 conn.commit()
 print("Database created!")
-
-# testowy wpis
-cursor.execute("""
-INSERT INTO runs (date, distance_km, duration_min, avg_pace, avg_speed,
-                  calories, avg_heart_rate, max_heart_rate, cadence,
-                  performance, vo2max, recovery_time_h)
-VALUES ('2025-05-01', 5.2, 38, '7:18', 8.2, 420, 158, 178, 172, 74, 42, 22)
-""")
-
-cursor.execute("""
-INSERT INTO wellbeing (run_id, headache, energy_before, energy_after, notes)
-VALUES (1, 0, 3, 4, 'First test entry, felt good')
-""")
-
-conn.commit()
-
-print("\n=== RUNS ===")
-for row in cursor.execute("SELECT * FROM runs"):
-    print(row)
-
-print("\n=== WELLBEING ===")
-for row in cursor.execute("SELECT * FROM wellbeing"):
-    print(row)
-
 conn.close()
