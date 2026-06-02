@@ -3,71 +3,69 @@ import sqlite3
 conn = sqlite3.connect('running.db')
 cursor = conn.cursor()
 
-# Tabela treningów
 cursor.execute("""
-CREATE TABLE IF NOT EXISTS treningi (
+CREATE TABLE IF NOT EXISTS runs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    data DATE NOT NULL,
-    dystans_km REAL,
-    czas_min INTEGER,
-    srednie_tempo TEXT,
-    srednia_predkosc REAL,
-    kalorie INTEGER,
-    srednie_tetno INTEGER,
-    max_tetno INTEGER,
-    kadencja INTEGER,
-    wydajnosc REAL,
+    date DATE NOT NULL,
+    distance_km REAL,
+    duration_min INTEGER,
+    avg_pace TEXT,
+    avg_speed REAL,
+    calories INTEGER,
+    avg_heart_rate INTEGER,
+    max_heart_rate INTEGER,
+    cadence INTEGER,
+    performance REAL,
     vo2max REAL,
-    czas_regeneracji_h INTEGER
+    recovery_time_h INTEGER
 )
 """)
 
-# Tabela pogody
 cursor.execute("""
-CREATE TABLE IF NOT EXISTS pogoda (
+CREATE TABLE IF NOT EXISTS weather (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    data DATE UNIQUE,
-    temperatura REAL,
-    cisnienie INTEGER,
-    wilgotnosc INTEGER
+    date DATE UNIQUE,
+    temperature REAL,
+    pressure INTEGER,
+    humidity INTEGER
 )
 """)
 
-# Tabela samopoczucia
 cursor.execute("""
-CREATE TABLE IF NOT EXISTS samopoczucie (
+CREATE TABLE IF NOT EXISTS wellbeing (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    trening_id INTEGER REFERENCES treningi(id),
-    bol_glowy INTEGER,
-    energia_przed INTEGER,
-    energia_po INTEGER,
-    notatka TEXT
+    run_id INTEGER REFERENCES runs(id),
+    headache INTEGER,
+    energy_before INTEGER,
+    energy_after INTEGER,
+    notes TEXT
 )
 """)
 
-print("Baza danych utworzona!")
+conn.commit()
+print("Database created!")
 
-# --- testowy wpis ---
+# testowy wpis
 cursor.execute("""
-INSERT INTO treningi (data, dystans_km, czas_min, srednie_tempo, srednia_predkosc, 
-                      kalorie, srednie_tetno, max_tetno, kadencja, wydajnosc, vo2max, czas_regeneracji_h)
+INSERT INTO runs (date, distance_km, duration_min, avg_pace, avg_speed,
+                  calories, avg_heart_rate, max_heart_rate, cadence,
+                  performance, vo2max, recovery_time_h)
 VALUES ('2025-05-01', 5.2, 38, '7:18', 8.2, 420, 158, 178, 172, 74, 42, 22)
 """)
 
 cursor.execute("""
-INSERT INTO samopoczucie (trening_id, bol_glowy, energia_przed, energia_po, notatka)
-VALUES (1, 0, 3, 4, 'Pierwszy test bazy, czułem się nieźle')
+INSERT INTO wellbeing (run_id, headache, energy_before, energy_after, notes)
+VALUES (1, 0, 3, 4, 'First test entry, felt good')
 """)
 
 conn.commit()
 
-# --- sprawdzenie ---
-print("\n=== TRENINGI ===")
-for row in cursor.execute("SELECT * FROM treningi"):
+print("\n=== RUNS ===")
+for row in cursor.execute("SELECT * FROM runs"):
     print(row)
 
-print("\n=== SAMOPOCZUCIE ===")
-for row in cursor.execute("SELECT * FROM samopoczucie"):
+print("\n=== WELLBEING ===")
+for row in cursor.execute("SELECT * FROM wellbeing"):
     print(row)
 
 conn.close()
