@@ -1,6 +1,6 @@
 import sqlite3
 
-conn = sqlite3.connect('bieganie.db')
+conn = sqlite3.connect('running.db')
 cursor = conn.cursor()
 
 # Tabela treningów
