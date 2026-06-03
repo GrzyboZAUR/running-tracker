@@ -93,5 +93,65 @@ def add():
 
     return render_template('add.html')
 
+
+@app.route('/stats')
+def stats():
+    db = get_db()
+
+    summary = db.execute("""
+        SELECT 
+            COUNT(*) as total_runs,
+            ROUND(SUM(distance_km), 1) as total_distance,
+            ROUND(AVG(distance_km), 1) as avg_distance,
+            ROUND(AVG(avg_heart_rate), 0) as avg_hr,
+            ROUND(AVG(vo2max), 1) as avg_vo2max,
+            ROUND(AVG(calories), 0) as avg_calories
+        FROM runs
+    """).fetchone()
+
+    runs_over_time = db.execute("""
+        SELECT date, distance_km, avg_heart_rate, avg_speed, vo2max
+        FROM runs
+        ORDER BY date ASC
+    """).fetchall()
+
+    weather_vs_hr = db.execute("""
+        SELECT r.date, r.avg_heart_rate, w.temperature, w.humidity,
+               s.headache
+        FROM runs r
+        LEFT JOIN weather w ON w.date = r.date
+        LEFT JOIN wellbeing s ON s.run_id = r.id
+        ORDER BY r.date ASC
+    """).fetchall()
+
+    headache_stats = db.execute("""
+        SELECT 
+            s.headache,
+            COUNT(*) as count,
+            ROUND(AVG(w.temperature), 1) as avg_temp,
+            ROUND(AVG(w.humidity), 1) as avg_humidity,
+            ROUND(AVG(r.avg_heart_rate), 0) as avg_hr,
+            ROUND(AVG(r.distance_km), 1) as avg_distance
+        FROM wellbeing s
+        JOIN runs r ON r.id = s.run_id
+        LEFT JOIN weather w ON w.date = r.date
+        GROUP BY s.headache
+    """).fetchall()
+
+    wellbeing_over_time = db.execute("""
+        SELECT r.date, s.energy_before, s.energy_after, s.headache, s.notes
+        FROM runs r
+        JOIN wellbeing s ON s.run_id = r.id
+        ORDER BY r.date ASC
+    """).fetchall()
+
+    return render_template('stats.html',
+                           summary=summary,
+                           runs_over_time=[dict(r) for r in runs_over_time],
+                           weather_vs_hr=[dict(r) for r in weather_vs_hr],
+                           headache_stats=[dict(r) for r in headache_stats],
+                           wellbeing_over_time=[dict(r) for r in wellbeing_over_time]
+                           )
+
 if __name__ == '__main__':
     app.run(debug=True)
