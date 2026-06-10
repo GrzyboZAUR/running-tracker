@@ -3,15 +3,38 @@ import sqlite3
 import requests
 from dotenv import load_dotenv
 import os
+from functools import wraps
+from flask import session
 
 load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'dev-fallback-key')
 DATABASE = os.getenv('DATABASE', 'running.db')
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', '')
 
+def login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get('logged_in'):
+            return redirect('/login')
+        return f(*args, **kwargs)
+    return decorated
 
-app = Flask(__name__)
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == 'POST':
+        if request.form['password'] == ADMIN_PASSWORD:
+            session['logged_in'] = True
+            return redirect('/add')
+        error = 'Wrong password'
+    return render_template('login.html', error=error)
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect('/')
 
 def get_db():
     conn = sqlite3.connect(DATABASE)
@@ -53,6 +76,7 @@ def index():
     return render_template('index.html', runs=runs)
 
 @app.route('/add', methods=['GET', 'POST'])
+@login_required
 def add():
     if request.method == 'POST':
         db = get_db()

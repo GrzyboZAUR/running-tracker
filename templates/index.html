@@ -15,9 +15,15 @@
     </style>
 </head>
 <body>
-    <h1>🏃 Running Tracker</h1>
-    <a class="btn" href="/add">+ Add run</a>
-    <a class="btn" href="/stats" style="background:#333; margin-left:10px;">📈 Stats</a>
+    <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px;">
+    {% if session.logged_in %}
+        <h1><a href="/add" style="text-decoration:none;">🏃</a> Running Tracker</h1>
+        <a class="btn" href="/logout" style="background:#333;">Logout</a>
+    {% else %}
+        <h1><a href="/login" style="text-decoration:none;">🏃</a> Running Tracker</h1>
+    {% endif %}
+    <a class="btn" href="/stats" style="background:#333;">📈 Stats</a>
+</div>
 
     <table>
         <tr>
