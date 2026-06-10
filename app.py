@@ -1,11 +1,20 @@
 from flask import Flask, render_template, request, redirect
 import sqlite3
 import requests
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+app = Flask(__name__)
+app.secret_key = os.getenv('SECRET_KEY', 'dev-fallback-key')
+DATABASE = os.getenv('DATABASE', 'running.db')
+
 
 app = Flask(__name__)
 
 def get_db():
-    conn = sqlite3.connect('running.db')
+    conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     return conn
 
