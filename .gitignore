@@ -222,3 +222,4 @@ running.db
 .env
 venv/
 *.db
+SQLedition.py
