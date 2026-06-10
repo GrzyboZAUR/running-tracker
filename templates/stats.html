@@ -39,7 +39,7 @@
 
         .charts {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
+            grid-template-columns: repeat(2, 1fr);
             gap: 24px;
         }
         .chart-box {
@@ -104,7 +104,7 @@
             <canvas id="tempHrChart"></canvas>
         </div>
     <!-- Headache analysis -->
-        <div class="chart-box" style="grid-column: 1 / -1;">
+        <div class="chart-box">
             <h2>🤕 Headache analysis</h2>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 16px;">
                 <canvas id="headacheChart"></canvas>
@@ -113,7 +113,7 @@
         </div>
 
         <!-- Wellbeing over time -->
-        <div class="chart-box" style="grid-column: 1 / -1;">
+        <div class="chart-box">
             <h2>😊 Energy levels over time</h2>
             <canvas id="wellbeingChart"></canvas>
         </div>
