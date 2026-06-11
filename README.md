@@ -8,10 +8,10 @@ A personal running data tracker built with Flask and SQLite. Logs workout data f
 
 ## Screenshots
 
-![Home](docs/screenshots/home.png)
-![Stats](docs/screenshots/stats.png)
-![Stats 2](docs/screenshots/stats2.png)
-![Add Run](docs/screenshots/add.png)
+![Home](docs/screenshots/home.jpg)
+![Stats](docs/screenshots/stats.jpg)
+![Stats 2](docs/screenshots/stats2.jpg)
+![Add Run](docs/screenshots/add.jpg)
 
 ---
 
