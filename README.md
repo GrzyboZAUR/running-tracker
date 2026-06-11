@@ -137,5 +137,7 @@ This project is designed to grow over time and answer personal questions such as
 ---
 
 ## Author
-
 Built as a portfolio project combining personal data, SQL, Python, and web development.
+
+Bartosz Grzybowski
+https://www.linkedin.com/in/bartosz-grzybowski-5444732bb/
