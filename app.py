@@ -143,7 +143,8 @@ def stats():
     """).fetchone()
 
     runs_over_time = db.execute("""
-        SELECT date, distance_km, avg_heart_rate, avg_speed, vo2max
+        SELECT date, distance_km, avg_heart_rate, avg_speed, vo2max,
+               recovery_time_h, calories
         FROM runs
         ORDER BY date ASC
     """).fetchall()

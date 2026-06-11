@@ -78,38 +78,38 @@
 
     <h1>📈 Running Stats</h1>
 
-    <div class="cards">
-        <div class="card">
-            <div class="value">{{ summary.total_runs }}</div>
-            <div class="label">Total runs</div>
+        <div class="cards">
+            <div class="card">
+                <div class="value">{{ summary.total_runs }}</div>
+                <div class="label">Total runs</div>
+            </div>
+            <div class="card">
+                <div class="value">{{ summary.total_distance }} km</div>
+                <div class="label">Total distance</div>
+            </div>
+            <div class="card">
+                <div class="value">{{ summary.avg_distance }} km</div>
+                <div class="label">Avg distance</div>
+            </div>
+            <div class="card">
+                <div class="value">{{ summary.avg_hr }}</div>
+                <div class="label">Avg heart rate</div>
+            </div>
+            <div class="card">
+                <div class="value">{{ summary.avg_vo2max }}</div>
+                <div class="label">Avg VO2Max</div>
+            </div>
+            <div class="card">
+                <div class="value">{{ summary.avg_calories }}</div>
+                <div class="label">Avg calories</div>
+            </div>
         </div>
-        <div class="card">
-            <div class="value">{{ summary.total_distance }} km</div>
-            <div class="label">Total distance</div>
-        </div>
-        <div class="card">
-            <div class="value">{{ summary.avg_distance }} km</div>
-            <div class="label">Avg distance</div>
-        </div>
-        <div class="card">
-            <div class="value">{{ summary.avg_hr }}</div>
-            <div class="label">Avg heart rate</div>
-        </div>
-        <div class="card">
-            <div class="value">{{ summary.avg_vo2max }}</div>
-            <div class="label">Avg VO2Max</div>
-        </div>
-        <div class="card">
-            <div class="value">{{ summary.avg_calories }}</div>
-            <div class="label">Avg calories</div>
-        </div>
-    </div>
 
-    <div class="charts">
+        <div class="charts">
         <div class="chart-box">
-            <h2>Distance over time</h2>
+            <h2>VO2Max over time</h2>
             <div class="chart-container">
-                <canvas id="distanceChart"></canvas>
+                <canvas id="vo2maxChart"></canvas>
             </div>
         </div>
         <div class="chart-box">
@@ -128,6 +128,24 @@
             <h2>Temperature vs Heart rate</h2>
             <div class="chart-container">
                 <canvas id="tempHrChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-box">
+            <h2>⏱️ Recovery time over time</h2>
+            <div class="chart-container">
+                <canvas id="recoveryChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-box">
+            <h2>🔥 Calories over time</h2>
+            <div class="chart-container">
+                <canvas id="caloriesChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-box">
+            <h2>❤️ Heart rate vs Speed</h2>
+            <div class="chart-container">
+                <canvas id="hrSpeedChart"></canvas>
             </div>
         </div>
         <div class="chart-box wide">
@@ -157,20 +175,27 @@
         const blue = 'rgba(54, 162, 235, 0.8)';
         const blueLight = 'rgba(54, 162, 235, 0.15)';
 
-        new Chart(document.getElementById('distanceChart'), {
-            type: 'bar',
+        new Chart(document.getElementById('vo2maxChart'), {
+            type: 'line',
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Distance (km)',
-                    data: runs.map(r => r.distance_km),
-                    backgroundColor: orange,
-                    borderRadius: 6
+                    label: 'VO2Max',
+                    data: runs.map(r => r.vo2max),
+                    borderColor: 'rgba(46, 184, 92, 0.8)',
+                    backgroundColor: 'rgba(46, 184, 92, 0.15)',
+                    tension: 0.3,
+                    fill: true
                 }]
             },
             options: {
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } }
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        title: { display: true, text: 'VO2Max (ml/kg/min)' }
+                    }
+                }
             }
         });
 
@@ -345,6 +370,79 @@
                 plugins: { legend: { position: 'top' } }
             }
         });
+
+    new Chart(document.getElementById('recoveryChart'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Recovery time (h)',
+                    data: runs.map(r => r.recovery_time_h),
+                    borderColor: 'rgba(153, 102, 255, 0.8)',
+                    backgroundColor: 'rgba(153, 102, 255, 0.15)',
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { title: { display: true, text: 'Hours' } }
+                }
+            }
+        });
+
+        new Chart(document.getElementById('caloriesChart'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Calories',
+                    data: runs.map(r => r.calories),
+                    backgroundColor: 'rgba(255, 159, 64, 0.7)',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { title: { display: true, text: 'kcal' } }
+                }
+            }
+        });
+
+        new Chart(document.getElementById('hrSpeedChart'), {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'HR vs Speed',
+                    data: runs.map(r => ({ x: r.avg_speed, y: r.avg_heart_rate })),
+                    backgroundColor: orange,
+                    pointRadius: 8
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    x: { title: { display: true, text: 'Avg Speed (km/h)' } },
+                    y: { title: { display: true, text: 'Avg Heart Rate' } }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => {
+                                const r = runs[ctx.dataIndex];
+                                return `${r.date}: ${ctx.parsed.y} bpm @ ${ctx.parsed.x} km/h`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        console.log('runs data:', runs.map(r => ({ date: r.date, recovery: r.recovery_time_h, calories: r.calories })));
     </script>
 </body>
 </html>
