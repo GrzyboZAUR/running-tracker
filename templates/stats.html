@@ -148,6 +148,18 @@
                 <canvas id="hrSpeedChart"></canvas>
             </div>
         </div>
+            <div class="chart-box">
+            <h2>🫁 Training Effect over time</h2>
+            <div class="chart-container">
+                <canvas id="trainingEffectChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-box">
+            <h2>🌬️ Pressure change vs headache occurrence</h2>
+            <div class="chart-container">
+                <canvas id="pressureChart"></canvas>
+            </div>
+        </div>
         <div class="chart-box wide">
             <h2>🤕 Headache analysis</h2>
             <div class="headache-grid">
@@ -280,17 +292,17 @@
         new Chart(document.getElementById('headacheChart'), {
             type: 'bar',
             data: {
-                labels: ['Avg Temp (°C)', 'Avg Humidity (%)', 'Avg Max HR', 'Avg Training Effect'],
+                labels: ['Avg Temp (°C)', 'Avg Humidity (%)', 'Avg Max HR'],
                 datasets: [
                     {
                         label: '✅ No headache',
-                        data: [noHeadache.avg_temp, noHeadache.avg_humidity, noHeadache.avg_hr, noHeadache.avg_performance],
+                        data: [noHeadache.avg_temp, noHeadache.avg_humidity, noHeadache.avg_hr],
                         backgroundColor: 'rgba(224, 92, 0, 0.7)',
                         borderRadius: 6
                     },
                     {
                         label: '🤕 Headache',
-                        data: [withHeadache.avg_temp, withHeadache.avg_humidity, withHeadache.avg_hr, withHeadache.avg_performance],
+                        data: [withHeadache.avg_temp, withHeadache.avg_humidity, withHeadache.avg_hr],
                         backgroundColor: 'rgba(220, 50, 50, 0.7)',
                         borderRadius: 6
                     }
@@ -443,6 +455,79 @@
             }
         });
         console.log('runs data:', runs.map(r => ({ date: r.date, recovery: r.recovery_time_h, calories: r.calories })));
+    new Chart(document.getElementById('pressureChart'), {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Pressure change (hPa)',
+            data: runs.map(r => r.pressure_change),
+            backgroundColor: runs.map((r, i) => {
+                const w = weather[i];
+                if (w && w.headache === 1) return 'rgba(220, 50, 50, 0.8)';
+                if (r.pressure_change === null) return 'rgba(200,200,200,0.5)';
+                return r.pressure_change < 0
+                    ? 'rgba(220, 50, 50, 0.2)'
+                    : 'rgba(54, 162, 235, 0.4)';
+            }),
+            borderRadius: 4
+        }]
+    },
+
+    options: {
+    maintainAspectRatio: false,
+    plugins: {
+        legend: { display: false },
+        tooltip: {
+            callbacks: {
+                label: (ctx) => {
+                    const w = weather[ctx.dataIndex];
+                    const headache = w && w.headache === 1 ? ' 🤕' : '';
+                    return `Pressure change: ${ctx.parsed.y} hPa${headache}`;
+                }
+            }
+        },
+        title: {
+            display: true,
+            text: '🔴 Dark red = headache  |  🔴 Light red = pressure drop  |  🔵 Blue = pressure rise',
+            font: { size: 12 },
+            color: '#888',
+            padding: { bottom: 10 }
+        }
+    },
+    scales: {
+        y: {
+            title: { display: true, text: 'hPa change vs previous day' }
+        }
+    }
+},
+    });
+    new Chart(document.getElementById('trainingEffectChart'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Training Effect',
+                data: runs.map(r => r.training_effect),
+                borderColor: 'rgba(255, 99, 132, 0.8)',
+                backgroundColor: 'rgba(255, 99, 132, 0.15)',
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    min: 1,
+                    max: 5,
+                    ticks: { stepSize: 0.5 },
+                    title: { display: true, text: 'Training Effect (1-5)' }
+                }
+            }
+        }
+});
     </script>
 </body>
 </html>

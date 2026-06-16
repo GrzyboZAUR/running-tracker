@@ -64,6 +64,28 @@ def fetch_weather(date):
     except:
         return None, None, None
 
+
+def fetch_prev_pressure(date):
+    """Pobiera ciśnienie z dnia poprzedniego"""
+    from datetime import datetime, timedelta
+    prev_date = (datetime.strptime(date, '%Y-%m-%d') - timedelta(days=1)).strftime('%Y-%m-%d')
+
+    url = "https://archive-api.open-meteo.com/v1/archive"
+    params = {
+        "latitude": 51.1,
+        "longitude": 17.03,
+        "start_date": prev_date,
+        "end_date": prev_date,
+        "hourly": "surface_pressure",
+        "timezone": "Europe/Warsaw"
+    }
+    try:
+        r = requests.get(url, params=params, timeout=5)
+        d = r.json()
+        return round(d["hourly"]["surface_pressure"][12])
+    except:
+        return None
+
 @app.route('/')
 def index():
     db = get_db()
@@ -123,6 +145,13 @@ def add():
                 VALUES (?,?,?,?)
             """, (date, temperature, pressure, humidity))
 
+        pressure_prev = fetch_prev_pressure(date)
+        if pressure_prev is not None:
+            db.execute("""
+                INSERT OR IGNORE INTO weather_prev (date, pressure_prev)
+                VALUES (?, ?)
+            """, (date, pressure_prev))
+
         db.commit()
         return redirect('/')
 
@@ -145,10 +174,14 @@ def stats():
     """).fetchone()
 
     runs_over_time = db.execute("""
-        SELECT date, distance_km, avg_heart_rate, avg_speed, vo2max,
-               recovery_time_h, calories
-        FROM runs
-        ORDER BY date ASC
+        SELECT r.date, r.distance_km, r.avg_heart_rate, r.avg_speed, r.vo2max,
+               r.recovery_time_h, r.calories, r.training_effect,
+               w.pressure, wp.pressure_prev,
+               w.pressure - wp.pressure_prev as pressure_change
+        FROM runs r
+        LEFT JOIN weather w ON w.date = r.date
+        LEFT JOIN weather_prev wp ON wp.date = r.date
+        ORDER BY r.date ASC
     """).fetchall()
 
     weather_vs_hr = db.execute("""
