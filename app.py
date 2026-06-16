@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 import os
 from functools import wraps
 from flask import session
+from rich.traceback import install
+install(show_locals=False)
 
 load_dotenv()
 
@@ -84,7 +86,7 @@ def add():
         db.execute("""
             INSERT INTO runs (date, distance_km, duration_min, avg_pace, avg_speed,
                 calories, avg_heart_rate, max_heart_rate, cadence,
-                performance, vo2max, recovery_time_h)
+                training_effect, vo2max, recovery_time_h)
             VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
         """, (
             request.form['date'],
@@ -96,7 +98,7 @@ def add():
             request.form['avg_heart_rate'],
             request.form['max_heart_rate'],
             request.form['cadence'],
-            request.form['performance'],
+            request.form['training_effect'],
             request.form['vo2max'],
             request.form['recovery_time_h'],
         ))
@@ -165,7 +167,7 @@ def stats():
             ROUND(AVG(w.temperature), 1) as avg_temp,
             ROUND(AVG(w.humidity), 1) as avg_humidity,
             ROUND(AVG(r.max_heart_rate), 0) as avg_hr,
-            ROUND(AVG(r.performance), 1) as avg_performance
+            ROUND(AVG(r.training_effect), 1) as training_effect
         FROM wellbeing s
         JOIN runs r ON r.id = s.run_id
         LEFT JOIN weather w ON w.date = r.date

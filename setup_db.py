@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS runs (
     avg_heart_rate INTEGER,
     max_heart_rate INTEGER,
     cadence INTEGER,
-    performance REAL,
+    training_effect REAL,
     vo2max REAL,
     recovery_time_h INTEGER
 )
@@ -39,6 +39,14 @@ CREATE TABLE IF NOT EXISTS wellbeing (
     energy_before INTEGER,
     energy_after INTEGER,
     notes TEXT
+)
+""")
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS weather_prev (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    date DATE UNIQUE,
+    pressure_prev INTEGER
 )
 """)
 
