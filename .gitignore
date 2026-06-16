@@ -223,4 +223,3 @@ running.db
 venv/
 *.db
 SQLedition.py
-weather_prev.py
