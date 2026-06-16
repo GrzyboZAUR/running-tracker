@@ -164,8 +164,8 @@ def stats():
             COUNT(*) as count,
             ROUND(AVG(w.temperature), 1) as avg_temp,
             ROUND(AVG(w.humidity), 1) as avg_humidity,
-            ROUND(AVG(r.avg_heart_rate), 0) as avg_hr,
-            ROUND(AVG(r.distance_km), 1) as avg_distance
+            ROUND(AVG(r.max_heart_rate), 0) as avg_hr,
+            ROUND(AVG(r.performance), 1) as avg_performance
         FROM wellbeing s
         JOIN runs r ON r.id = s.run_id
         LEFT JOIN weather w ON w.date = r.date

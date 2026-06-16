@@ -280,17 +280,17 @@
         new Chart(document.getElementById('headacheChart'), {
             type: 'bar',
             data: {
-                labels: ['Avg Temp (°C)', 'Avg Humidity (%)', 'Avg HR', 'Avg Distance (km)'],
+                labels: ['Avg Temp (°C)', 'Avg Humidity (%)', 'Avg Max HR', 'Avg Performance'],
                 datasets: [
                     {
                         label: '✅ No headache',
-                        data: [noHeadache.avg_temp, noHeadache.avg_humidity, noHeadache.avg_hr, noHeadache.avg_distance],
+                        data: [noHeadache.avg_temp, noHeadache.avg_humidity, noHeadache.avg_hr, noHeadache.avg_performance],
                         backgroundColor: 'rgba(224, 92, 0, 0.7)',
                         borderRadius: 6
                     },
                     {
                         label: '🤕 Headache',
-                        data: [withHeadache.avg_temp, withHeadache.avg_humidity, withHeadache.avg_hr, withHeadache.avg_distance],
+                        data: [withHeadache.avg_temp, withHeadache.avg_humidity, withHeadache.avg_hr, withHeadache.avg_performance],
                         backgroundColor: 'rgba(220, 50, 50, 0.7)',
                         borderRadius: 6
                     }
@@ -323,9 +323,9 @@
                     <tr><td style="padding:6px 8px;">Avg heart rate</td>
                         <td style="text-align:center;">${noHeadache.avg_hr ?? '—'} bpm</td>
                         <td style="text-align:center;">${withHeadache.avg_hr ?? '—'} bpm</td></tr>
-                    <tr style="background:#fafafa;"><td style="padding:6px 8px;">Avg distance</td>
-                        <td style="text-align:center;">${noHeadache.avg_distance ?? '—'} km</td>
-                        <td style="text-align:center;">${withHeadache.avg_distance ?? '—'} km</td></tr>
+                    <tr style="background:#fafafa;"><td style="padding:6px 8px;">Avg performance</td>
+                        <td style="text-align:center;">${noHeadache.avg_performance ?? '—'} km</td>
+                        <td style="text-align:center;">${withHeadache.avg_performance ?? '—'} km</td></tr>
                 </tbody>
             </table>
             <p style="margin-top:10px; font-size:11px; color:#999;">
