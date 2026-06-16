@@ -5,8 +5,6 @@ from dotenv import load_dotenv
 import os
 from functools import wraps
 from flask import session
-from rich.traceback import install
-install(show_locals=False)
 
 load_dotenv()
 
