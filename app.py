@@ -26,8 +26,8 @@ def login():
     error = None
     if request.method == 'POST':
         if request.form['password'] == ADMIN_PASSWORD:
-            next_page = request.args.get('next', '/add')
-            return redirect(next_page)
+            session['logged_in'] = True
+            return redirect('/')
         error = 'Wrong password'
     return render_template('login.html', error=error)
 
