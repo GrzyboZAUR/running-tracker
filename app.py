@@ -18,7 +18,7 @@ def login_required(f):
     def decorated(*args, **kwargs):
         if not session.get('logged_in'):
             return redirect(f'/login?next=/{f.__name__}')
-            return f(*args, **kwargs)
+        return f(*args, **kwargs)
     return decorated
 
 @app.route('/login', methods=['GET', 'POST'])
