@@ -17,8 +17,8 @@ def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if not session.get('logged_in'):
-            return redirect('/login')
-        return f(*args, **kwargs)
+            return redirect(f'/login?next=/{f.__name__}')
+            return f(*args, **kwargs)
     return decorated
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -26,8 +26,8 @@ def login():
     error = None
     if request.method == 'POST':
         if request.form['password'] == ADMIN_PASSWORD:
-            session['logged_in'] = True
-            return redirect('/add')
+            next_page = request.args.get('next', '/add')
+            return redirect(next_page)
         error = 'Wrong password'
     return render_template('login.html', error=error)
 
