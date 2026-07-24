@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Ride</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; }
+        h1 { color: #2196F3; }
+        label { display: block; margin-top: 15px; font-weight: bold; }
+        input, textarea, select { width: 100%; padding: 8px; margin-top: 4px;
+                                  border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .btn { background: #2196F3; color: white; padding: 12px 30px; border: none;
+               border-radius: 5px; cursor: pointer; margin-top: 20px; font-size: 16px; }
+        .section { background: #f0f7ff; padding: 15px; border-radius: 8px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>🚴 Add Ride</h1>
+    <form method="POST">
+        <div class="section">
+            <h3>📊 Watch data</h3>
+            <label>Date</label>
+            <input type="date" name="date" required>
+            <label>Distance (km)</label>
+            <input type="number" step="0.01" name="distance_km" placeholder="25.0">
+            <label>Duration (minutes)</label>
+            <input type="number" name="duration_min" placeholder="60">
+            <label>Average speed (km/h)</label>
+            <input type="number" step="0.1" name="avg_speed" placeholder="22.5">
+            <label>Max speed (km/h)</label>
+            <input type="number" step="0.1" name="max_speed" placeholder="35.0">
+            <label>Calories</label>
+            <input type="number" name="calories" placeholder="600">
+            <label>Average heart rate</label>
+            <input type="number" name="avg_heart_rate" placeholder="145">
+            <label>Max heart rate</label>
+            <input type="number" name="max_heart_rate" placeholder="175">
+            <label>Training Effect (1-5)</label>
+            <input type="number" step="0.1" name="training_effect" placeholder="3.0">
+            <label>Recovery time (hours)</label>
+            <input type="number" name="recovery_time_h" placeholder="16">
+        </div>
+
+        <div class="section">
+            <h3>😊 Wellbeing</h3>
+            <label>Headache after ride?</label>
+            <select name="headache">
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+            </select>
+            <label>Energy before ride (1-5)</label>
+            <input type="number" min="1" max="5" name="energy_before" placeholder="3">
+            <label>Energy after ride (1-5)</label>
+            <input type="number" min="1" max="5" name="energy_after" placeholder="4">
+            <label>Notes</label>
+            <textarea name="notes" rows="3" placeholder="How did you feel?"></textarea>
+        </div>
+
+        <button class="btn" type="submit">💾 Save ride</button>
+    </form>
+</body>
+</html>

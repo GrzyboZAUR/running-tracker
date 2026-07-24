@@ -220,5 +220,137 @@ def stats():
                            wellbeing_over_time=[dict(r) for r in wellbeing_over_time]
                            )
 
+@app.route('/rides')
+def rides():
+    db = get_db()
+    rides = db.execute("""
+        SELECT r.*, w.headache, w.energy_before, w.energy_after, w.notes,
+               p.temperature, p.pressure, p.humidity
+        FROM rides r
+        LEFT JOIN wellbeing_rides w ON w.ride_id = r.id
+        LEFT JOIN weather p ON p.date = r.date
+        ORDER BY r.date DESC
+    """).fetchall()
+    return render_template('rides.html', rides=rides)
+
+@app.route('/add_ride', methods=['GET', 'POST'])
+@login_required
+def add_ride():
+    if request.method == 'POST':
+        db = get_db()
+
+        db.execute("""
+            INSERT INTO rides (date, distance_km, duration_min, avg_speed, max_speed,
+                calories, avg_heart_rate, max_heart_rate, training_effect, recovery_time_h)
+            VALUES (?,?,?,?,?,?,?,?,?,?)
+        """, (
+            request.form['date'],
+            request.form['distance_km'],
+            request.form['duration_min'],
+            request.form['avg_speed'],
+            request.form['max_speed'],
+            request.form['calories'],
+            request.form['avg_heart_rate'],
+            request.form['max_heart_rate'],
+            request.form['training_effect'],
+            request.form['recovery_time_h'],
+        ))
+        ride_id = db.execute("SELECT last_insert_rowid()").fetchone()[0]
+
+        db.execute("""
+            INSERT INTO wellbeing_rides (ride_id, headache, energy_before, energy_after, notes)
+            VALUES (?,?,?,?,?)
+        """, (
+            ride_id,
+            request.form['headache'],
+            request.form['energy_before'],
+            request.form['energy_after'],
+            request.form.get('notes', '')
+        ))
+
+        date = request.form['date']
+        temperature, pressure, humidity = fetch_weather(date)
+        if temperature is not None:
+            db.execute("""
+                INSERT OR IGNORE INTO weather (date, temperature, pressure, humidity)
+                VALUES (?,?,?,?)
+            """, (date, temperature, pressure, humidity))
+
+        pressure_prev = fetch_prev_pressure(date)
+        if pressure_prev is not None:
+            db.execute("""
+                INSERT OR IGNORE INTO weather_prev (date, pressure_prev)
+                VALUES (?, ?)
+            """, (date, pressure_prev))
+
+        db.commit()
+        return redirect('/rides')
+
+    return render_template('add_ride.html')
+
+@app.route('/stats_rides')
+def stats_rides():
+    db = get_db()
+
+    summary = db.execute("""
+        SELECT
+            COUNT(*) as total_rides,
+            ROUND(SUM(distance_km), 1) as total_distance,
+            ROUND(AVG(distance_km), 1) as avg_distance,
+            ROUND(AVG(avg_heart_rate), 0) as avg_hr,
+            ROUND(AVG(training_effect), 1) as avg_training_effect,
+            ROUND(AVG(calories), 0) as avg_calories
+        FROM rides
+    """).fetchone()
+
+    rides_over_time = db.execute("""
+        SELECT r.date, r.distance_km, r.avg_heart_rate, r.avg_speed,
+               r.max_speed, r.calories, r.training_effect, r.recovery_time_h,
+               w.pressure, wp.pressure_prev,
+               w.pressure - wp.pressure_prev as pressure_change
+        FROM rides r
+        LEFT JOIN weather w ON w.date = r.date
+        LEFT JOIN weather_prev wp ON wp.date = r.date
+        ORDER BY r.date ASC
+    """).fetchall()
+
+    weather_vs_hr = db.execute("""
+        SELECT r.date, r.avg_heart_rate, w.temperature, w.humidity,
+               wr.headache
+        FROM rides r
+        LEFT JOIN weather w ON w.date = r.date
+        LEFT JOIN wellbeing_rides wr ON wr.ride_id = r.id
+        ORDER BY r.date ASC
+    """).fetchall()
+
+    headache_stats = db.execute("""
+        SELECT
+            wr.headache,
+            COUNT(*) as count,
+            ROUND(AVG(w.temperature), 1) as avg_temp,
+            ROUND(AVG(w.humidity), 1) as avg_humidity,
+            ROUND(AVG(r.max_heart_rate), 0) as avg_hr,
+            ROUND(AVG(r.training_effect), 1) as avg_training_effect
+        FROM wellbeing_rides wr
+        JOIN rides r ON r.id = wr.ride_id
+        LEFT JOIN weather w ON w.date = r.date
+        GROUP BY wr.headache
+    """).fetchall()
+
+    wellbeing_over_time = db.execute("""
+        SELECT r.date, wr.energy_before, wr.energy_after, wr.headache, wr.notes
+        FROM rides r
+        JOIN wellbeing_rides wr ON wr.ride_id = r.id
+        ORDER BY r.date ASC
+    """).fetchall()
+
+    return render_template('stats_rides.html',
+        summary=summary,
+        rides_over_time=[dict(r) for r in rides_over_time],
+        weather_vs_hr=[dict(r) for r in weather_vs_hr],
+        headache_stats=[dict(r) for r in headache_stats],
+        wellbeing_over_time=[dict(r) for r in wellbeing_over_time]
+    )
+
 if __name__ == '__main__':
     app.run(debug=True)

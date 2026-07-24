@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cycling Stats</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 30px; }
+        h1 { color: #2196F3; margin-bottom: 24px; }
+        h2 { color: #333; margin-bottom: 16px; font-size: 18px; }
+        a { color: #2196F3; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .nav { margin-bottom: 24px; display: flex; gap: 16px; align-items: center; }
+        .btn { background: #333; color: white; padding: 8px 16px;
+               border-radius: 5px; text-decoration: none; font-size: 14px; }
+        .btn-run { background: #e05c00; }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+        .card .value { font-size: 32px; font-weight: bold; color: #2196F3; }
+        .card .label { font-size: 13px; color: #888; margin-top: 4px; }
+
+        .charts {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+        .chart-box {
+            background: white;
+            border-radius: 10px;
+            padding: 24px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            height: 300px;
+            position: relative;
+        }
+        .chart-box.wide { height: 360px; }
+        .chart-container { position: relative; height: calc(100% - 36px); }
+        .headache-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            height: calc(100% - 36px);
+        }
+        .headache-grid .chart-container { height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="/rides">← Back to rides</a>
+        <a class="btn btn-run" href="/">🏃 Runs</a>
+        <a class="btn" href="/stats">📈 Run Stats</a>
+    </div>
+
+    <h1>🚴 Cycling Stats</h1>
+
+    <div class="cards">
+        <div class="card">
+            <div class="value">{{ summary.total_rides }}</div>
+            <div class="label">Total rides</div>
+        </div>
+        <div class="card">
+            <div class="value">{{ summary.total_distance }} km</div>
+            <div class="label">Total distance</div>
+        </div>
+        <div class="card">
+            <div class="value">{{ summary.avg_distance }} km</div>
+            <div class="label">Avg distance</div>
+        </div>
+        <div class="card">
+            <div class="value">{{ summary.avg_hr }}</div>
+            <div class="label">Avg heart rate</div>
+        </div>
+        <div class="card">
+            <div class="value">{{ summary.avg_training_effect }}</div>
+            <div class="label">Avg Training Effect</div>
+        </div>
+        <div class="card">
+            <div class="value">{{ summary.avg_calories }}</div>
+            <div class="label">Avg calories</div>
+        </div>
+    </div>
+
+    <div class="charts">
+        <div class="chart-box">
+            <h2>📏 Distance over time</h2>
+            <div class="chart-container">
+                <canvas id="distanceChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-box">
+            <h2>❤️ Heart rate over time</h2>
+            <div class="chart-container">
+                <canvas id="hrChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-box">
+            <h2>⚡ Speed over time</h2>
+            <div class="chart-container">
+                <canvas id="speedChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-box">
+            <h2>🌡️ Temperature vs Heart rate</h2>
+            <div class="chart-container">
+                <canvas id="tempHrChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-box">
+            <h2>🫁 Training Effect over time</h2>
+            <div class="chart-container">
+                <canvas id="trainingEffectChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-box">
+            <h2>⏱️ Recovery time over time</h2>
+            <div class="chart-container">
+                <canvas id="recoveryChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-box">
+            <h2>🔥 Calories over time</h2>
+            <div class="chart-container">
+                <canvas id="caloriesChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-box">
+            <h2>🌬️ Pressure change vs headache</h2>
+            <div class="chart-container">
+                <canvas id="pressureChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-box wide">
+            <h2>🤕 Headache analysis</h2>
+            <div class="headache-grid">
+                <div class="chart-container">
+                    <canvas id="headacheChart"></canvas>
+                </div>
+                <div id="headacheTable" style="overflow-y:auto;"></div>
+            </div>
+        </div>
+        <div class="chart-box wide">
+            <h2>😊 Energy levels over time</h2>
+            <div class="chart-container">
+                <canvas id="wellbeingChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const rides = {{ rides_over_time | tojson }};
+        const weather = {{ weather_vs_hr | tojson }};
+        const headacheStats = {{ headache_stats | tojson }};
+        const wellbeing = {{ wellbeing_over_time | tojson }};
+
+        const labels = rides.map(r => r.date);
+        const blue = 'rgba(33, 150, 243, 0.8)';
+        const blueLight = 'rgba(33, 150, 243, 0.15)';
+        const orange = 'rgba(224, 92, 0, 0.8)';
+
+        new Chart(document.getElementById('distanceChart'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{ label: 'Distance (km)', data: rides.map(r => r.distance_km),
+                    backgroundColor: blue, borderRadius: 6 }]
+            },
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
+
+        new Chart(document.getElementById('hrChart'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{ label: 'Avg HR', data: rides.map(r => r.avg_heart_rate),
+                    borderColor: blue, backgroundColor: blueLight, tension: 0.3, fill: true }]
+            },
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
+
+        new Chart(document.getElementById('speedChart'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Avg speed', data: rides.map(r => r.avg_speed),
+                        borderColor: blue, backgroundColor: blueLight, tension: 0.3, fill: false, yAxisID: 'yAvg' },
+                    { label: 'Max speed', data: rides.map(r => r.max_speed),
+                        borderColor: 'rgba(33, 150, 243, 0.3)', backgroundColor: 'transparent',
+                        tension: 0.3, fill: false, borderDash: [5,5], yAxisID: 'yAvg' }
+                ]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: { legend: { display: true, position: 'top' } },
+                scales: { yAvg: { type: 'linear', position: 'left',
+                    title: { display: true, text: 'Speed (km/h)' } } }
+            }
+        });
+
+        new Chart(document.getElementById('tempHrChart'), {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Temp vs HR',
+                    data: weather.filter(r => r.temperature !== null)
+                        .map(r => ({ x: r.temperature, y: r.avg_heart_rate })),
+                    backgroundColor: weather.filter(r => r.temperature !== null)
+                        .map(r => r.headache === 1 ? 'rgba(220,50,50,0.8)' : blue),
+                    pointRadius: 8
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    x: { title: { display: true, text: 'Temperature (°C)' } },
+                    y: { title: { display: true, text: 'Avg Heart Rate' } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        new Chart(document.getElementById('trainingEffectChart'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{ label: 'Training Effect', data: rides.map(r => r.training_effect),
+                    borderColor: 'rgba(255, 99, 132, 0.8)', backgroundColor: 'rgba(255, 99, 132, 0.15)',
+                    tension: 0.3, fill: true }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { min: 1, max: 5, ticks: { stepSize: 0.5 },
+                    title: { display: true, text: 'Training Effect (1-5)' } } }
+            }
+        });
+
+        new Chart(document.getElementById('recoveryChart'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{ label: 'Recovery time (h)', data: rides.map(r => r.recovery_time_h),
+                    borderColor: 'rgba(153, 102, 255, 0.8)', backgroundColor: 'rgba(153, 102, 255, 0.15)',
+                    tension: 0.3, fill: true }]
+            },
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false } },
+                scales: { y: { title: { display: true, text: 'Hours' } } } }
+        });
+
+        new Chart(document.getElementById('caloriesChart'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{ label: 'Calories', data: rides.map(r => r.calories),
+                    backgroundColor: 'rgba(255, 159, 64, 0.7)', borderRadius: 6 }]
+            },
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false } },
+                scales: { y: { title: { display: true, text: 'kcal' } } } }
+        });
+
+        new Chart(document.getElementById('pressureChart'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Pressure change (hPa)',
+                    data: rides.map(r => r.pressure_change),
+                    backgroundColor: rides.map((r, i) => {
+                        const w = weather[i];
+                        if (w && w.headache === 1) return 'rgba(220, 50, 50, 0.8)';
+                        if (r.pressure_change === null) return 'rgba(200,200,200,0.5)';
+                        return r.pressure_change < 0 ? 'rgba(220, 50, 50, 0.2)' : 'rgba(33, 150, 243, 0.4)';
+                    }),
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    title: { display: true,
+                        text: '🔴 Dark red = headache  |  🔴 Light red = pressure drop  |  🔵 Blue = pressure rise',
+                        font: { size: 12 }, color: '#888', padding: { bottom: 10 } }
+                },
+                scales: { y: { title: { display: true, text: 'hPa change vs previous day' } } }
+            }
+        });
+
+        const noHeadache = headacheStats.find(h => h.headache === 0) || {};
+        const withHeadache = headacheStats.find(h => h.headache === 1) || {};
+
+        new Chart(document.getElementById('headacheChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Avg Temp (°C)', 'Avg Humidity (%)', 'Avg Max HR'],
+                datasets: [
+                    { label: '✅ No headache',
+                        data: [noHeadache.avg_temp, noHeadache.avg_humidity, noHeadache.avg_hr],
+                        backgroundColor: 'rgba(33, 150, 243, 0.7)', borderRadius: 6 },
+                    { label: '🤕 Headache',
+                        data: [withHeadache.avg_temp, withHeadache.avg_humidity, withHeadache.avg_hr],
+                        backgroundColor: 'rgba(220, 50, 50, 0.7)', borderRadius: 6 }
+                ]
+            },
+            options: { maintainAspectRatio: false,
+                plugins: { legend: { position: 'top' } },
+                scales: { y: { beginAtZero: true } } }
+        });
+
+        const table = document.getElementById('headacheTable');
+        table.innerHTML = `
+            <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                <thead>
+                    <tr style="background:#f5f5f5;">
+                        <th style="padding:8px; text-align:left;">Metric</th>
+                        <th style="padding:8px; text-align:center;">✅ No headache<br><small>(${noHeadache.count || 0} rides)</small></th>
+                        <th style="padding:8px; text-align:center;">🤕 Headache<br><small>(${withHeadache.count || 0} rides)</small></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td style="padding:6px 8px;">Avg temperature</td>
+                        <td style="text-align:center;">${noHeadache.avg_temp ?? '—'} °C</td>
+                        <td style="text-align:center;">${withHeadache.avg_temp ?? '—'} °C</td></tr>
+                    <tr style="background:#fafafa;"><td style="padding:6px 8px;">Avg humidity</td>
+                        <td style="text-align:center;">${noHeadache.avg_humidity ?? '—'} %</td>
+                        <td style="text-align:center;">${withHeadache.avg_humidity ?? '—'} %</td></tr>
+                    <tr><td style="padding:6px 8px;">Avg max heart rate</td>
+                        <td style="text-align:center;">${noHeadache.avg_hr ?? '—'} bpm</td>
+                        <td style="text-align:center;">${withHeadache.avg_hr ?? '—'} bpm</td></tr>
+                    <tr style="background:#fafafa;"><td style="padding:6px 8px;">Avg training effect</td>
+                        <td style="text-align:center;">${noHeadache.avg_training_effect ?? '—'}</td>
+                        <td style="text-align:center;">${withHeadache.avg_training_effect ?? '—'}</td></tr>
+                </tbody>
+            </table>
+            <p style="margin-top:10px; font-size:11px; color:#999;">
+                * Analysis based on ${headacheStats.reduce((a,b) => a + b.count, 0)} rides.
+                More data needed for reliable conclusions.
+            </p>
+        `;
+
+        new Chart(document.getElementById('wellbeingChart'), {
+            type: 'line',
+            data: {
+                labels: wellbeing.map(w => w.date),
+                datasets: [
+                    { label: 'Energy before', data: wellbeing.map(w => w.energy_before),
+                        borderColor: 'rgba(33, 150, 243, 0.8)', backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                        tension: 0.3, fill: true },
+                    { label: 'Energy after', data: wellbeing.map(w => w.energy_after),
+                        borderColor: orange, backgroundColor: 'rgba(224, 92, 0, 0.1)',
+                        tension: 0.3, fill: true }
+                ]
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: { y: { min: 1, max: 5, ticks: { stepSize: 1 },
+                    title: { display: true, text: 'Energy level (1-5)' } } },
+                plugins: { legend: { position: 'top' } }
+            }
+        });
+    </script>
+</body>
+</html>
