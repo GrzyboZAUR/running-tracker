@@ -1,0 +1,30 @@
+name: Deploy to PythonAnywhere
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Pull latest code on PythonAnywhere
+        run: |
+          curl -X POST \
+            --data "username=${{ secrets.PA_USERNAME }}&token=${{ secrets.PA_API_TOKEN }}" \
+            "https://www.pythonanywhere.com/api/v0/user/${{ secrets.PA_USERNAME }}/consoles/" \
+            -H "Authorization: Token ${{ secrets.PA_API_TOKEN }}"
+
+      - name: Git pull on PythonAnywhere
+        run: |
+          curl -X POST \
+            "https://www.pythonanywhere.com/api/v0/user/${{ secrets.PA_USERNAME }}/files/path/home/${{ secrets.PA_USERNAME }}/running-tracker/" \
+            -H "Authorization: Token ${{ secrets.PA_API_TOKEN }}"
+
+      - name: Reload web app
+        run: |
+          curl -X POST \
+            "https://www.pythonanywhere.com/api/v0/user/${{ secrets.PA_USERNAME }}/webapps/runningtracker.pythonanywhere.com/reload/" \
+            -H "Authorization: Token ${{ secrets.PA_API_TOKEN }}"
