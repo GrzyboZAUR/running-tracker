@@ -1,8 +1,8 @@
-# 🏃 Running Tracker
+🏃🚴 Activity Tracker
 
-A personal running data tracker built with Flask and SQLite. Logs workout data from a Huawei smartwatch, automatically fetches weather conditions, and analyzes correlations between running performance, weather, and wellbeing — including post-run headache occurrence.
+A personal fitness tracker built with Flask and SQLite. Logs running and cycling data from a Huawei smartwatch, automatically fetches weather conditions, and analyzes correlations between performance, weather, and wellbeing — including post-workout headache occurrence.
 
-**Live demo:** https://runningtracker.pythonanywhere.com
+Live demo: https://runningtracker.pythonanywhere.com
 
 ---
 
@@ -15,20 +15,28 @@ A personal running data tracker built with Flask and SQLite. Logs workout data f
 
 ---
 
-## Features
+Features
+🏃 Running
+Log running sessions with detailed metrics from a smartwatch (distance, pace, heart rate, VO2Max, recovery time, and more)
+Statistics dashboard with interactive charts:
+VO2Max trend over time
+Heart rate and pace/speed progression
+Temperature vs heart rate scatter plot
+Recovery time and calories burned
+Atmospheric pressure change vs headache occurrence
+Energy levels before vs after run
 
-- Log running sessions with detailed metrics from a smartwatch (distance, pace, heart rate, VO2Max, recovery time, and more)
-- Automatic weather data fetching via [Open-Meteo API](https://open-meteo.com/) (temperature, pressure, humidity) based on run date
-- Wellbeing tracking — energy levels before/after run, post-run headache occurrence
-- Statistics dashboard with interactive charts:
-  - VO2Max trend over time
-  - Heart rate and speed progression
-  - Temperature vs heart rate scatter plot
-  - Recovery time and calories burned
-  - Headache analysis — comparing weather and performance conditions
-  - Energy levels before vs after run
-- Password-protected data entry
-- Mobile-friendly — accessible from phone after outdoor runs
+🚴 Cycling
+Log cycling sessions (distance, speed, heart rate, training effect, calories, recovery time)
+Separate statistics dashboard with the same analysis approach as running
+
+General
+Automatic weather data fetching via Open-Meteo API (temperature, pressure, humidity) based on workout date
+Automatic atmospheric pressure fetching for the previous day to calculate pressure change
+Wellbeing tracking — energy levels before/after workout, post-workout headache occurrence
+Headache analysis — comparing weather and performance conditions between headache and no-headache sessions
+Password-protected data entry
+Mobile-friendly — accessible from phone right after outdoor workouts
 
 ---
 
@@ -45,18 +53,21 @@ A personal running data tracker built with Flask and SQLite. Logs workout data f
 
 ---
 
-## Project Structure
-
+Project Structure
 ```
 running-tracker/
-├── app.py              # Flask application, routes, weather API integration
-├── setup_db.py         # Database schema creation
-├── requirements.txt    # Python dependencies
+├── app.py                  # Flask application, routes, weather API integration
+├── setup_db.py             # Database schema creation
+├── fetch_pressure.py       # One-time script to backfill historical pressure data
+├── requirements.txt        # Python dependencies
 ├── templates/
-│   ├── index.html      # Home page — runs table
-│   ├── stats.html      # Statistics dashboard with charts
-│   ├── add.html        # Add run form
-│   └── login.html      # Password protected login
+│   ├── index.html          # Home page — runs table
+│   ├── rides.html          # Cycling page — rides table
+│   ├── stats.html          # Running statistics dashboard
+│   ├── stats_rides.html    # Cycling statistics dashboard
+│   ├── add.html            # Add run form
+│   ├── add_ride.html       # Add ride form
+│   └── login.html          # Password protected login
 └── docs/
     └── screenshots/
 ```
@@ -65,12 +76,15 @@ running-tracker/
 
 ## Database Schema
 
-Three normalized tables connected by date and foreign key:
+Six normalized tables connected by date and foreign key:
 
 ```sql
-runs        -- workout metrics from smartwatch
-weather     -- automatically fetched weather conditions
-wellbeing   -- subjective post-run feelings and headache tracking
+runs            -- running metrics from smartwatch
+rides           -- cycling metrics from smartwatch
+weather         -- automatically fetched weather conditions (shared)
+weather_prev    -- previous day pressure for change calculation
+wellbeing       -- subjective post-run feelings and headache tracking
+wellbeing_rides -- subjective post-ride feelings and headache tracking
 ```
 
 ---
@@ -117,20 +131,23 @@ Open http://127.0.0.1:5000 in your browser.
 
 This project is designed to grow over time and answer personal questions such as:
 
-- Does post-run headache correlate with high temperature or low atmospheric pressure?
-- Does heart rate decrease at the same speed over time (indicator of improving fitness)?
-- Is VO2Max improving after returning to running after a 15-year break?
-- Does energy level before a run affect performance?
-
-> ⚠️ Currently based on a small dataset. Conclusions will become more reliable after 30+ runs.
-
+Does post-workout headache correlate with high temperature or low atmospheric pressure?
+Does atmospheric pressure change between days trigger headaches more than absolute pressure?
+Does heart rate decrease at the same speed over time (indicator of improving fitness)?
+Is VO2Max improving after returning to running after a 15-year break?
+Does energy level before a workout affect performance?
+How do running and cycling compare in terms of recovery time and training effect?
 ---
 
 ## Roadmap
 
+- [x] Running tracker with weather integration
+- [x] Headache analysis vs weather conditions
+- [x] Atmospheric pressure change analysis
+- [x] Cycling tracker with separate stats
 - [ ] Deploy to Azure App Service with Azure SQL Database
 - [ ] CI/CD pipeline with GitHub Actions
-- [ ] Add atmospheric pressure correlation analysis
+- [ ] Comparison dashboard: running vs cycling
 - [ ] Jupyter Notebook with deeper statistical analysis
 - [ ] Export data to CSV
 
