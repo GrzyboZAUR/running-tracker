@@ -4,7 +4,10 @@ import requests
 from dotenv import load_dotenv
 import os
 from functools import wraps
-from flask import session
+from flask import session, Response
+import openpyxl
+from openpyxl.styles import Font, PatternFill, Alignment
+from io import BytesIO
 
 load_dotenv()
 
@@ -393,7 +396,139 @@ def compare():
         runs_over_time=[dict(r) for r in runs_over_time],
         rides_over_time=[dict(r) for r in rides_over_time]
     )
+def make_xlsx(headers, rows, sheet_name):
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = sheet_name
 
+    for col, h in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=h)
+        cell.font = Font(bold=True, color="FFFFFF")
+        cell.fill = PatternFill("solid", fgColor="E05C00")
+        cell.alignment = Alignment(horizontal="center")
+
+    for row_idx, row in enumerate(rows, 2):
+        for col_idx, val in enumerate(row, 1):
+            ws.cell(row=row_idx, column=col_idx, value=val)
+
+    for col in range(1, len(headers) + 1):
+        ws.column_dimensions[openpyxl.utils.get_column_letter(col)].width = 16
+
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    return output
+
+@app.route('/export/runs')
+def export_runs():
+    db = get_db()
+    runs = db.execute("""
+        SELECT r.date, r.distance_km, r.duration_min, r.avg_pace, r.avg_speed,
+               r.calories, r.avg_heart_rate, r.max_heart_rate, r.cadence,
+               r.training_effect, r.vo2max, r.recovery_time_h,
+               w.temperature, w.pressure, w.humidity,
+               w.pressure - wp.pressure_prev as pressure_change,
+               s.headache, s.energy_before, s.energy_after, s.notes
+        FROM runs r
+        LEFT JOIN weather w ON w.date = r.date
+        LEFT JOIN weather_prev wp ON wp.date = r.date
+        LEFT JOIN wellbeing s ON s.run_id = r.id
+        ORDER BY r.date ASC
+    """).fetchall()
+
+    headers = [
+        'Date', 'Distance (km)', 'Duration (min)', 'Avg Pace', 'Avg Speed (km/h)',
+        'Calories', 'Avg HR', 'Max HR', 'Cadence',
+        'Training Effect', 'VO2Max', 'Recovery (h)',
+        'Temperature (°C)', 'Pressure (hPa)', 'Humidity (%)', 'Pressure Change (hPa)',
+        'Headache', 'Energy Before', 'Energy After', 'Notes'
+    ]
+
+    output = make_xlsx(headers, runs, 'Runs')
+    return Response(
+        output,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        headers={'Content-Disposition': 'attachment; filename=runs.xlsx'}
+    )
+
+@app.route('/export/rides')
+def export_rides():
+    db = get_db()
+    rides = db.execute("""
+        SELECT r.date, r.distance_km, r.duration_min, r.avg_speed, r.max_speed,
+               r.calories, r.avg_heart_rate, r.max_heart_rate,
+               r.training_effect, r.recovery_time_h,
+               w.temperature, w.pressure, w.humidity,
+               w.pressure - wp.pressure_prev as pressure_change,
+               s.headache, s.energy_before, s.energy_after, s.notes
+        FROM rides r
+        LEFT JOIN weather w ON w.date = r.date
+        LEFT JOIN weather_prev wp ON wp.date = r.date
+        LEFT JOIN wellbeing_rides s ON s.ride_id = r.id
+        ORDER BY r.date ASC
+    """).fetchall()
+
+    headers = [
+        'Date', 'Distance (km)', 'Duration (min)', 'Avg Speed (km/h)', 'Max Speed (km/h)',
+        'Calories', 'Avg HR', 'Max HR',
+        'Training Effect', 'Recovery (h)',
+        'Temperature (°C)', 'Pressure (hPa)', 'Humidity (%)', 'Pressure Change (hPa)',
+        'Headache', 'Energy Before', 'Energy After', 'Notes'
+    ]
+
+    output = make_xlsx(headers, rides, 'Rides')
+    return Response(
+        output,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        headers={'Content-Disposition': 'attachment; filename=rides.xlsx'}
+    )
+
+@app.route('/export/all')
+def export_all():
+    db = get_db()
+
+    runs = db.execute("""
+        SELECT 'Run', r.date, r.distance_km, r.duration_min, r.avg_speed,
+               r.calories, r.avg_heart_rate, r.max_heart_rate,
+               r.training_effect, r.recovery_time_h,
+               w.temperature, w.pressure, w.humidity,
+               w.pressure - wp.pressure_prev,
+               s.headache, s.energy_before, s.energy_after, s.notes
+        FROM runs r
+        LEFT JOIN weather w ON w.date = r.date
+        LEFT JOIN weather_prev wp ON wp.date = r.date
+        LEFT JOIN wellbeing s ON s.run_id = r.id
+    """).fetchall()
+
+    rides = db.execute("""
+        SELECT 'Ride', r.date, r.distance_km, r.duration_min, r.avg_speed,
+               r.calories, r.avg_heart_rate, r.max_heart_rate,
+               r.training_effect, r.recovery_time_h,
+               w.temperature, w.pressure, w.humidity,
+               w.pressure - wp.pressure_prev,
+               s.headache, s.energy_before, s.energy_after, s.notes
+        FROM rides r
+        LEFT JOIN weather w ON w.date = r.date
+        LEFT JOIN weather_prev wp ON wp.date = r.date
+        LEFT JOIN wellbeing_rides s ON s.ride_id = r.id
+    """).fetchall()
+
+    all_activities = sorted(list(runs) + list(rides), key=lambda x: x[1])
+
+    headers = [
+        'Type', 'Date', 'Distance (km)', 'Duration (min)', 'Avg Speed (km/h)',
+        'Calories', 'Avg HR', 'Max HR',
+        'Training Effect', 'Recovery (h)',
+        'Temperature (°C)', 'Pressure (hPa)', 'Humidity (%)', 'Pressure Change (hPa)',
+        'Headache', 'Energy Before', 'Energy After', 'Notes'
+    ]
+
+    output = make_xlsx(headers, all_activities, 'All Activities')
+    return Response(
+        output,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        headers={'Content-Disposition': 'attachment; filename=activities.xlsx'}
+    )
 
 if __name__ == '__main__':
     app.run(debug=True)
