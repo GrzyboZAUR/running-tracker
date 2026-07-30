@@ -47,8 +47,8 @@ def get_db():
 def fetch_weather(date):
     url = "https://archive-api.open-meteo.com/v1/archive"
     params = {
-        "latitude": 52.23,
-        "longitude": 21.01,
+        "latitude": 51.1,
+        "longitude": 17.03,
         "start_date": date,
         "end_date": date,
         "daily": "temperature_2m_max",
