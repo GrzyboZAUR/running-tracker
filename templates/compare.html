@@ -75,6 +75,7 @@
         <a href="/">← Back</a>
         <a class="btn btn-run" href="/">🏃 Runs</a>
         <a class="btn btn-ride" href="/rides">🚴 Rides</a>
+        <a class="btn" href="#" onclick="openExport(); return false;" style="background:#555;">⬇️ Export</a>
     </div>
 
     <h1>⚖️ Running vs Cycling</h1>
@@ -154,7 +155,23 @@
             </div>
         </div>
     </div>
-
+        <!-- Export modal -->
+        <div id="exportModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+             background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
+            <div style="background:white; border-radius:12px; padding:30px; width:300px; text-align:center;">
+                <h3 style="margin-bottom:20px; color:#333;">⬇️ Export data</h3>
+                <a href="/export/runs" style="display:block; background:#e05c00; color:white; padding:10px;
+                   border-radius:6px; text-decoration:none; margin-bottom:10px;">🏃 Runs only</a>
+                <a href="/export/rides" style="display:block; background:#2196F3; color:white; padding:10px;
+                   border-radius:6px; text-decoration:none; margin-bottom:10px;">🚴 Rides only</a>
+                <a href="/export/all" style="display:block; background:#333; color:white; padding:10px;
+                   border-radius:6px; text-decoration:none; margin-bottom:20px;">⚡ All activities</a>
+                <button onclick="document.getElementById('exportModal').style.display='none'"
+                    style="background:#eee; border:none; padding:8px 20px; border-radius:6px; cursor:pointer;">
+                    Cancel
+                </button>
+            </div>
+        </div>
     <script>
         const runs = {{ runs_over_time | tojson }};
         const rides = {{ rides_over_time | tojson }};
@@ -248,6 +265,13 @@
                     y: { title: { display: true, text: 'kcal' } }
                 }
             }
+        });
+        function openExport() {
+            document.getElementById('exportModal').style.display = 'flex';
+        }
+        // zamknij klikając poza oknem
+        document.getElementById('exportModal').addEventListener('click', function(e) {
+            if (e.target === this) this.style.display = 'none';
         });
     </script>
 </body>
