@@ -351,6 +351,49 @@ def stats_rides():
         headache_stats=[dict(r) for r in headache_stats],
         wellbeing_over_time=[dict(r) for r in wellbeing_over_time]
     )
+@app.route('/compare')
+def compare():
+    db = get_db()
+
+    runs_summary = db.execute("""
+        SELECT 
+            COUNT(*) as total,
+            ROUND(SUM(distance_km), 1) as total_distance,
+            ROUND(AVG(calories), 0) as avg_calories,
+            ROUND(SUM(calories), 0) as total_calories,
+            ROUND(AVG(avg_heart_rate), 0) as avg_hr,
+            ROUND(AVG(recovery_time_h), 1) as avg_recovery
+        FROM runs
+    """).fetchone()
+
+    rides_summary = db.execute("""
+        SELECT 
+            COUNT(*) as total,
+            ROUND(SUM(distance_km), 1) as total_distance,
+            ROUND(AVG(calories), 0) as avg_calories,
+            ROUND(SUM(calories), 0) as total_calories,
+            ROUND(AVG(avg_heart_rate), 0) as avg_hr,
+            ROUND(AVG(recovery_time_h), 1) as avg_recovery
+        FROM rides
+    """).fetchone()
+
+    runs_over_time = db.execute("""
+        SELECT date, calories, avg_heart_rate, recovery_time_h
+        FROM runs ORDER BY date ASC
+    """).fetchall()
+
+    rides_over_time = db.execute("""
+        SELECT date, calories, avg_heart_rate, recovery_time_h
+        FROM rides ORDER BY date ASC
+    """).fetchall()
+
+    return render_template('compare.html',
+        runs_summary=dict(runs_summary),
+        rides_summary=dict(rides_summary),
+        runs_over_time=[dict(r) for r in runs_over_time],
+        rides_over_time=[dict(r) for r in rides_over_time]
+    )
+
 
 if __name__ == '__main__':
     app.run(debug=True)
