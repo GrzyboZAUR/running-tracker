@@ -67,6 +67,7 @@ running-tracker/
 ├── app.py                  # Flask application, routes, weather API integration
 ├── setup_db.py             # Database schema creation
 ├── fetch_pressure.py       # One-time script to backfill historical pressure data
+├── analysis.ipynb          # Data analysis in Jupyter Notebook
 ├── requirements.txt        # Python dependencies
 ├── templates/
 │   ├── index.html          # Home page — runs table
@@ -157,7 +158,7 @@ How do running and cycling compare in terms of recovery time and training effect
 - [ ] Deploy to Azure App Service with Azure SQL Database
 - [x] CI/CD pipeline with GitHub Actions
 - [x] Comparison dashboard: running vs cycling
-- [ ] Jupyter Notebook with deeper statistical analysis
+- [x] Jupyter Notebook with deeper statistical analysis
 - [x] Export data to CSV
 
 ---
