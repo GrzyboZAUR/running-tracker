@@ -12,6 +12,8 @@ Live demo: https://runningtracker.pythonanywhere.com
 ![Stats](docs/screenshots/stats.jpg)
 ![Stats 2](docs/screenshots/stats2.jpg)
 ![Add Run](docs/screenshots/add.jpg)
+![Compare](docs/screenshots/compare.jpg)
+
 
 ---
 
@@ -29,6 +31,12 @@ Energy levels before vs after run
 🚴 Cycling
 Log cycling sessions (distance, speed, heart rate, training effect, calories, recovery time)
 Separate statistics dashboard with the same analysis approach as running
+
+⚖️ Comparison
+- Side-by-side comparison of running and cycling sessions
+- Summary cards: total distance, total calories, avg heart rate
+- Charts comparing avg calories, avg heart rate and avg recovery time per session
+- Calories over time — both activities on one chart**
 
 General
 Automatic weather data fetching via Open-Meteo API (temperature, pressure, humidity) based on workout date
@@ -67,6 +75,7 @@ running-tracker/
 │   ├── stats_rides.html    # Cycling statistics dashboard
 │   ├── add.html            # Add run form
 │   ├── add_ride.html       # Add ride form
+│   ├── compare.html        # Running vs cycling comparison dashboard
 │   └── login.html          # Password protected login
 └── docs/
     └── screenshots/
@@ -146,8 +155,8 @@ How do running and cycling compare in terms of recovery time and training effect
 - [x] Atmospheric pressure change analysis
 - [x] Cycling tracker with separate stats
 - [ ] Deploy to Azure App Service with Azure SQL Database
-- [ ] CI/CD pipeline with GitHub Actions
-- [ ] Comparison dashboard: running vs cycling
+- [x] CI/CD pipeline with GitHub Actions
+- [x] Comparison dashboard: running vs cycling
 - [ ] Jupyter Notebook with deeper statistical analysis
 - [ ] Export data to CSV
 
