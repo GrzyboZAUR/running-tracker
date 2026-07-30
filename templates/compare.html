@@ -201,7 +201,8 @@
             options: {
                 maintainAspectRatio: false,
                 plugins: { legend: { position: 'top' } },
-                scales: { y: { beginAtZero: false,
+                sscales: { y: {
+                    min: 100,
                     title: { display: true, text: 'bpm' } } }
             }
         });
