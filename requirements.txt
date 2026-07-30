@@ -2,3 +2,8 @@ flask
 requests
 python-dotenv
 openpyxl
+jupyter
+pandas
+matplotlib
+seaborn
+scipy
