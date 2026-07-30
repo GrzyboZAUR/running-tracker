@@ -158,7 +158,7 @@ How do running and cycling compare in terms of recovery time and training effect
 - [x] CI/CD pipeline with GitHub Actions
 - [x] Comparison dashboard: running vs cycling
 - [ ] Jupyter Notebook with deeper statistical analysis
-- [ ] Export data to CSV
+- [x] Export data to CSV
 
 ---
 
